@@ -60,7 +60,7 @@ func (e *EncryptedMessage) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func (e *EncryptedMessage) decrypt(privateKey *rsa.PrivateKey) (signed *SignedMessage, err error) {
+func (e *EncryptedMessage) Decrypt(privateKey *rsa.PrivateKey) (signed *SignedMessage, err error) {
 	hash := sha256.New()
 	parts := make([][]byte, len(e.Msg))
 	for i, part := range e.Msg {
@@ -83,7 +83,7 @@ func (e *EncryptedMessage) decrypt(privateKey *rsa.PrivateKey) (signed *SignedMe
 }
 
 func (e *EncryptedMessage) DecryptAndVerify(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) (msg []byte, err error) {
-	signed, err := e.decrypt(privateKey)
+	signed, err := e.Decrypt(privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (e *EncryptedMessage) DecryptAndVerify(privateKey *rsa.PrivateKey, publicKe
 }
 
 func (e *EncryptedMessage) DecryptToMsg(privateKey *rsa.PrivateKey) (msg []byte, err error) {
-	signed, err := e.decrypt(privateKey)
+	signed, err := e.Decrypt(privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (s *SignedMessage) Encrypt(publicKey *rsa.PublicKey) (encrypted *EncryptedM
 }
 
 type Message struct {
-	Msg       []byte
+	Msg []byte
 }
 
 func (m *Message) SignMessage(privateKey *rsa.PrivateKey) (signed *SignedMessage, err error) {
@@ -205,4 +205,19 @@ func SignAndEncrypt(msg []byte, privateKey *rsa.PrivateKey, publicKey *rsa.Publi
 		return nil, err
 	}
 	return encryptedMessage, nil
+}
+
+func Decrypt(msg []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
+	var encryptedMessage EncryptedMessage
+	dec := gob.NewDecoder(bytes.NewReader(msg))
+	err := dec.Decode(&encryptedMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err = encryptedMessage.DecryptToMsg(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	return msg, nil
 }
