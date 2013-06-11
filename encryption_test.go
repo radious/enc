@@ -66,40 +66,17 @@ func TestEncrypting(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	if len(msgRec) != len(msg) {
+	msgDecoded, err := Decrypt(signedAndEncrypted.Bytes(), key2)
+	if err != nil || len(msgDecoded) == 0 {
+		t.Fatal(err.Error())
+	}
+
+	if len(msgRec) != len(msg) || len(msg) != len(msgDecoded) {
 		t.Fatal("Messages has different sizes!", len(msgRec), "!=", len(msg))
 	}
 
 	for i := 0; i < len(msg); i += 1 {
-		if msg[i] != msgRec[i] {
-			t.Fatalf("Char %v is different in messages!", i)
-		}
-	}
-}
-
-func TestDecrypting(t *testing.T) {
-	key1 := generateKey(t)
-	key2 := generateKey(t)
-	msg := []byte(lorem)
-
-	encryptedMessage, err := SignAndEncrypt(msg, key1, &key2.PublicKey)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-
-	encrypted := encryptedMessage.Bytes()
-
-	decrypted, err := Decrypt(encrypted, key2)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-
-	if len(decrypted) != len(msg) {
-		t.Fatal("Messages has different sizes!", len(decrypted), "!=", len(msg))
-	}
-
-	for i := 0; i < len(msg); i += 1 {
-		if msg[i] != decrypted[i] {
+		if msg[i] != msgRec[i] || msg[i] != msgDecoded[i] {
 			t.Fatalf("Char %v is different in messages!", i)
 		}
 	}
