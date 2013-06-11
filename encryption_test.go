@@ -18,8 +18,7 @@ func TestSigning(t *testing.T) {
 	key1 := generateKey(t)
 
 	message := new(Message)
-	s := "Foo Bar"
-	message.Msg = []byte(s)
+	message.Msg = []byte(lorem)
 
 	signedMsg, err := message.SignMessage(key1)
 	if err != nil {
@@ -32,10 +31,6 @@ func TestSigning(t *testing.T) {
 	} else if eval != true {
 		t.Fatal("Public keys doesn't match!")
 	}
-
-	/*	if err != nil {
-		t.Fatal(err.Error())
-	}*/
 }
 
 func TestSplitting(t *testing.T) {
